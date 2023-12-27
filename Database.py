@@ -1,0 +1,242 @@
+import sqlite3
+
+import pandas as pd
+from PyQt5.QtWidgets import QMessageBox
+
+
+class Database():
+    def __init__(self):
+        self.create_table()
+
+    def connect(self):
+        connect = sqlite3.connect('database/Haushalt.db')
+
+        return connect
+
+    def insert_artikel(self, newData=None):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        data_insert = []
+
+        #Match von fehlenden Kategorien
+        matched_data = self.match_artikel_kategorie(matchData=newData)
+
+        if matched_data is not None:
+            # Table: Calday, Calmonth, Calyear, Artikel, Preis, Kategorie
+            for row in matched_data:
+                data_insert.append([row[0], row[0][3:5], row[0][6:], row[1], row[2], row[3]])
+
+            cursor.executemany("""INSERT INTO artikel VALUES(?, ?, ?, ?, ?, ?)""", data_insert)
+
+            connection.commit()
+
+        connection.close()
+
+    def get_artikel(self):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        query = """SELECT * FROM artikel"""
+        cursor.execute(query)
+        dataset = cursor.fetchall()
+
+        return dataset
+
+    def get_top_5_ausgaben(self, date=None):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        month = date[3:5]
+        year = date[6:]
+
+        query = """SELECT artikelKategorie, round(sum(artikelPreis), 2) FROM artikel WHERE calmonth = '""" + month + """' AND calyear = '""" + year + """' GROUP BY artikelKategorie"""
+        cursor.execute(query)
+        dataset = cursor.fetchall()
+
+        data_top_5 = []
+        for row in dataset:
+            data_top_5.append([row[0], row[1]])
+
+        df = pd.DataFrame(data_top_5, columns=['Kategorie', 'Summe'])
+        sorted_df = df.sort_values('Summe', ascending=False)
+
+        data_top_5 = sorted_df.values.tolist()
+
+        return data_top_5[0:5]
+
+    def match_artikel_kategorie(self, matchData=None):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        for row in matchData:
+
+            if row[3] == 'None':
+                query = """SELECT artikelKategorie FROM artikel WHERE artikelName = '""" + row[1] + """'"""
+
+                cursor.execute(query)
+                dataset = cursor.fetchall()
+
+                if len(dataset) == 0:
+                    msgBox = QMessageBox()
+                    msgBox.setIcon(QMessageBox.Critical)
+                    msgBox.setWindowTitle("Fehler")
+                    msgBox.setText("Bitte Kategorie manuell matchen!")
+                    msgBox.exec()
+
+                    return None
+                else:
+                    row[3] = dataset[0][0]
+
+        return matchData
+
+    def save_table_widget_data(self, tableData=None):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        data_insert = []
+
+        # Table: Calday, Calmonth, Calyear, Einnahmen, Ausgaben, Kategorie
+        for row in tableData:
+            data_insert.append([row[0], row[0][3:5], row[0][6:], row[1].replace(' €', ''), row[2].replace(' €', ''), row[3]])
+
+        cursor.executemany("""INSERT INTO tableWidgetDaten VALUES(?, ?, ?, ?, ?, ?)""", data_insert)
+
+        connection.commit()
+
+        connection.close()
+
+    def delete_table_widget_data(self, caldate=None):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        cursor.execute("""DELETE FROM tableWidgetDaten WHERE calmonth = '""" + caldate[3:5] + """' AND calyear = '""" + caldate[6:] + """'""")
+
+        connection.commit()
+
+        connection.close()
+
+    def get_table_widget_data(self, caldate=None):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        query = """SELECT calday, einnahmen, ausgaben, kategorie FROM tableWidgetDaten WHERE calmonth = '""" + caldate[3:5] + """' AND calyear = '""" + caldate[6:] + """'"""
+
+        cursor.execute(query)
+        dataset = cursor.fetchall()
+
+        table_data = []
+
+        for row in dataset:
+            table_data.append([row[0], row[1].replace(' ', ''), row[2], row[3]])
+
+        return table_data
+
+    def get_kategorie_sparen(self):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        query = """SELECT round(sum(ausgaben), 2) FROM tableWidgetDaten WHERE kategorie = 'Sparen'"""
+
+        cursor.execute(query)
+        dataset = cursor.fetchall()
+
+        table_data = []
+
+        sparen = 0.00
+        db_summe = 0.00
+
+        for row in dataset:
+
+            db_summe = row[0]
+            if db_summe != None:
+                sparen = float(sparen) + float(db_summe)
+
+        table_data.append([sparen])
+
+        return table_data
+
+    def save_new_categorie(self, categorie=None):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        cat = []
+        cat.append([categorie])
+
+        cursor.executemany("""INSERT INTO kategorie VALUES(?)""", cat)
+
+        connection.commit()
+
+    def get_all_categories(self):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        query = """SELECT kategorie FROM kategorie ORDER BY kategorie ASC"""
+
+        cursor.execute(query)
+        dataset = cursor.fetchall()
+
+        table_data = []
+
+        if len(dataset) == 0:
+            table_data.append(['Bitte Kategorie anlegen'])
+        else:
+            for row in dataset:
+                table_data.append([row[0]])
+
+        return table_data
+
+    def create_table(self):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        query = """CREATE TABLE IF NOT EXISTS artikel (calday date, calmonth varchar(2), calyear int(11), artikelName varchar(100), artikelPreis float, artikelKategorie varchar(100));"""
+
+        cursor.execute(query)
+        connection.commit()
+
+        query = """CREATE TABLE IF NOT EXISTS tableWidgetDaten (calday date, calmonth varchar(2), calyear int(11), einnahmen varchar(100), ausgaben varchar(100), kategorie varchar(100));"""
+
+        cursor.execute(query)
+        connection.commit()
+
+        query = """CREATE TABLE IF NOT EXISTS kategorie (kategorie varchar(100));"""
+
+        cursor.execute(query)
+        connection.commit()
+
+        connection.close()
+
+    def get_ausgaben_in_zahlen(self, date=None):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        month = date[3:5]
+        year = date[6:]
+
+        query = """SELECT artikelKategorie, round(sum(artikelPreis), 2) FROM artikel WHERE calmonth = '""" + month + """' AND calyear = '""" + year + """' GROUP BY artikelKategorie"""
+        cursor.execute(query)
+        dataset = cursor.fetchall()
+
+        data = []
+        for row in dataset:
+            data.append([row[0], row[1]])
+
+        df = pd.DataFrame(data, columns=['Kategorie', 'Summe'])
+        sorted_df = df.sort_values('Summe', ascending=False)
+
+        data = sorted_df.values.tolist()
+
+        return data
+
+    def delete_data_by_calday(self, calday=None):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        cursor.execute("""DELETE FROM artikel WHERE calday = '""" + calday + """'""")
+
+        connection.commit()
+
+        cursor.execute("""DELETE FROM tableWidgetDaten WHERE calday = '""" + calday + """'""")
+
+        connection.commit()
