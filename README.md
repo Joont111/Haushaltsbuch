@@ -1,7 +1,7 @@
 <br/>
 <p align="center">
   <a href="https://github.com/Joont111/Haushaltsbuch">
-    <img src="https://github.com/Joont111/Haushaltsbuch/screenshots/analytics_chart.png" alt="Logo" width="80" height="80">
+    <img src="https://raw.githubusercontent.com/Joont111/Haushaltsbuch/main/ui/icon/analytics_chart.png" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">Haushaltsbuch</h3>
@@ -23,7 +23,6 @@ Thanks to [ShaanCoding](https://github.com/ShaanCoding/) for the readme generato
 * [About the Project](#about-the-project)
 * [Built With](#built-with)
 * [Getting Started](#getting-started)
-  * [Installation](#installation)
 * [Usage](#usage)
 * [Roadmap](#roadmap)
 * [Authors](#authors)
@@ -31,7 +30,7 @@ Thanks to [ShaanCoding](https://github.com/ShaanCoding/) for the readme generato
 
 ## About The Project
 
-![Screen Shot](https://github.com/Joont111/Haushaltsbuch/screenshots/screenshot_dashboard.jpg)
+![Screen Shot](https://github.com/Joont111/Haushaltsbuch/blob/main/screenshots/screenshot_dashboard.jpg)
 
 Die Idee für dieses Projekt ist mir nach dem einkaufen gekommen. Wer sich bei den Bonusprogrammen seines Supermarktes des vertrauens angemeldet hat, wird sicherlich schon einen Digitalen-Kassenbon bekommen haben.
 
@@ -39,10 +38,12 @@ Die Daten werden in Excel etwas formatiert, in eine CSV Datei umgewandelt und da
 
 Zusätzlich gibt es eine Datei für die Fixkosten. Die kannst du ausfüllen und jeden Monat neu einlesen. Die Daten der Fixkosten werden nicht mit in die Top 5 Ausgaben eingerechnet.
 
-![Screen Shot](https://github.com/Joont111/Haushaltsbuch/screenshots/screenshot_menu.jpg)
+![Screen Shot](https://github.com/Joont111/Haushaltsbuch/blob/main/screenshots/screenshot_menu.jpg)
 
-![Screen Shot](https://github.com/Joont111/Haushaltsbuch/screenshots/screenshot_listen.jpg)
+![Screen Shot](https://github.com/Joont111/Haushaltsbuch/blob/main/screenshots/screenshot_listen.jpg)
 
+## Getting Started
+Über den Download-Link kannst du dir den aktuellen Release herunterladen. Entpacke den Ordner und kopiere den Inhalt an einen Ort deiner Wahl. 
 
 ## Built With
 
@@ -66,6 +67,7 @@ Die Anwendung wurde mit Python und Qt entwickelt. Nachfolgende Module habe ich d
 * [pandas](https://pandas.pydata.org)
 * [sqlite3](https://docs.python.org/3/library/sqlite3.html)
 * [QMessageBox](https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QMessageBox.html)
+* [QDateEdit](https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QDateEdit.html)
 
 ## Usage
 
