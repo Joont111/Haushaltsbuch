@@ -43,7 +43,7 @@ class Ui_Dialog(object):
         self.closeButton.setStyleSheet("QPushButton {\n"
 "    background-color:  #6d6d6d;\n"
 "    border-radius: 5px;\n"
-"    color: #fff;\n"
+"    color: #ffffff;\n"
 "}\n"
 "\n"
 "QPushButton::hover {\n"
@@ -68,7 +68,7 @@ class Ui_Dialog(object):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
         self.version_label.setText(_translate("Dialog", "Version:"))
-        self.label.setText(_translate("Dialog", "20231231"))
+        self.label.setText(_translate("Dialog", "03012024"))
         self.label_2.setText(_translate("Dialog", "Umsetzung:"))
         self.label_3.setText(_translate("Dialog", "Python, PyQt5, Qt"))
         self.closeButton.setText(_translate("Dialog", "Alles klar!"))

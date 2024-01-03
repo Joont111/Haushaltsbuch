@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:/Users/chris/Documents/GitHub/Haushaltsbuch/ui/NewCategorieDialog.ui'
+# Form implementation generated from reading ui file 'C:/Users/chris/Documents/GitHub/Haushaltsbuch/ui/ui_dialog_new_categorie.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -40,12 +40,12 @@ class Ui_Dialog(object):
         self.pushButtonSpeichern.setStyleSheet("QPushButton {\n"
 "    background-color:  #6d6d6d;\n"
 "    border-radius: 5px;\n"
-"    color: #fff;\n"
+"    color: #ffffff;\n"
 "}\n"
 "\n"
 "QPushButton::hover {\n"
 "    background-color: #e0e1e3;\n"
-"    color: #fff;\n"
+"    color: #ffffff;\n"
 "}")
         self.pushButtonSpeichern.setObjectName("pushButtonSpeichern")
         self.gridLayout_2.addWidget(self.pushButtonSpeichern, 3, 3, 1, 1)
@@ -87,12 +87,12 @@ class Ui_Dialog(object):
         self.pushButtonAbbrechen.setStyleSheet("QPushButton {\n"
 "    background-color:  #6d6d6d;\n"
 "    border-radius: 5px;\n"
-"    color: #fff;\n"
+"    color: #ffffff;\n"
 "}\n"
 "\n"
 "QPushButton::hover {\n"
 "    background-color: #e0e1e3;\n"
-"    color: #fff;\n"
+"    color: #ffffff;\n"
 "}")
         self.pushButtonAbbrechen.setObjectName("pushButtonAbbrechen")
         self.gridLayout_2.addWidget(self.pushButtonAbbrechen, 3, 2, 1, 1)

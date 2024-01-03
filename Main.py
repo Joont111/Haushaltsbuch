@@ -36,8 +36,10 @@ class MainWindow(QMainWindow):
         self.ui.home_button_1.setChecked(True)
 
         # Set content to combo box
-        self.generate_stichtag()
-        self.current_stichtag = self.ui.combo_box_stichtag.currentText()
+        # self.generate_stichtag()
+        current_date = QtCore.QDate.fromString(date.today().strftime('%m.%Y'), 'MM.yyyy')
+        self.ui.date_edit_stichtag.setDate(current_date)
+        self.current_stichtag = self.ui.date_edit_stichtag.date().toPyDate().strftime("%Y-%m-%d")
 
         self.database = Database()
 
@@ -63,7 +65,8 @@ class MainWindow(QMainWindow):
         self.ui.exit_button_1.clicked.connect(self.close)
         self.ui.exit_button_2.clicked.connect(self.close)
 
-        self.ui.combo_box_stichtag.currentTextChanged.connect(self.get_stichtag)
+        #self.ui.combo_box_stichtag.currentTextChanged.connect(self.get_stichtag)
+        self.ui.date_edit_stichtag.dateChanged.connect(self.get_stichtag)
 
         # **********************************************************************
         # Stacked Page: Dashboard Widgets
@@ -83,7 +86,7 @@ class MainWindow(QMainWindow):
 
         # Create Pie Chart Top 5 Ausgaben
         self.chart_pie = Chart()
-        self.pie_data = self.database.get_top_5_ausgaben(date=self.ui.combo_box_stichtag.currentText())
+        self.pie_data = self.database.get_top_5_ausgaben(date=self.current_stichtag)
         self.pie_label = 'Top 5 Ausgaben'
         self.hbox_layout = QHBoxLayout()
         self.hbox_layout.addWidget(self.chart_pie.func_pie_chart(self.pie_data, pieLabel=self.pie_label))
@@ -140,14 +143,6 @@ class MainWindow(QMainWindow):
         # Init Data and fill charts and Tables
         self.get_stichtag()
 
-
-    # Set Buttons exclusive
-    # def on_stackedWidget_currentChanged(self, index):
-    #     button_list = self.ui.icon_only_widget.findChildren(QPushButton) \
-    #                     + self.ui.full_menu_widget.findChildren(QPushButton)
-        
-    #     for button in button_list:
-    #         button.setAutoExclusive(True)
 
     # Button Functions (Change StackedWidget Pages)
     def on_home_button_1_toggled(self):
@@ -218,27 +213,13 @@ class MainWindow(QMainWindow):
         self.dialog.ui.lineEditSelectedFile.textChanged.connect(self.get_selected_file_path)
         self.dialog.ui.comboBoxKategorie.currentTextChanged.connect(self.get_selected_categorie)
 
-    # Set combo box content (Set Date with end of month)
-    def generate_stichtag(self):
-        month = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-        year = date.today().year
-        current_year_month = date.today().strftime('%m.%Y')
-
-        for i in range(0, 12):
-            last_day = calendar.monthrange(year, int(month[i]))
-
-            self.ui.combo_box_stichtag.addItem(str(last_day[1]) + '.' + str(month[i]) + '.' + str(year))
-
-            if current_year_month == (str(month[i]) + '.' + str(year)):
-                self.ui.combo_box_stichtag.setCurrentIndex(i)
-
     # **********************************************************************
     # Application Functions
     # **********************************************************************
 
     # Update Charts and Table data by new date
     def get_stichtag(self):
-        stichtag = self.ui.combo_box_stichtag.currentText()
+        self.current_stichtag = self.ui.date_edit_stichtag.date().toPyDate().strftime("%Y-%m-%d")
 
         self.table_widget.clear()
         self.table_widget.setRowCount(0)
@@ -252,7 +233,7 @@ class MainWindow(QMainWindow):
         self.ui.label_ausgaben_number.setText('0')
 
         # Datenbank mit den neuem Stichtag abfragen
-        self.set_table_data(self.database.get_table_widget_data(stichtag), noSave=True)
+        self.set_table_data(self.database.get_table_widget_data(self.current_stichtag), noSave=True)
 
         # Tab 2 Tabelle refreshen
         self.update_table_ausgaben_in_zahlen()
@@ -272,8 +253,10 @@ class MainWindow(QMainWindow):
                 total_einnahmen = float(self.ui.label_einnahmen_number.text().replace(' €', '')) + float(value_1)
                 self.ui.label_einnahmen_number.setText(str(round(total_einnahmen, 2)) + ' €')
 
-                total_ausgaben = float(self.ui.label_ausgaben_number.text().replace(' €', '')) + float(value_2)
-                self.ui.label_ausgaben_number.setText(str(round(total_ausgaben, 2)) + ' €')
+                # Exclude cat 'Sparen'
+                if kategorie != 'Sparen':
+                    total_ausgaben = float(self.ui.label_ausgaben_number.text().replace(' €', '')) + float(value_2)
+                    self.ui.label_ausgaben_number.setText(str(round(total_ausgaben, 2)) + ' €')
 
             if noSave == False:
                 self.save_table_data()
@@ -287,7 +270,7 @@ class MainWindow(QMainWindow):
 
     # Save TableWigdet Data (Left Table) -> Obsolete?
     def save_table_data(self):
-        self.database.delete_table_widget_data(self.ui.combo_box_stichtag.currentText())
+        self.database.delete_table_widget_data(self.current_stichtag)
 
         list_new_data = []
         for i in range(0, self.table_widget.rowCount()):
@@ -338,7 +321,7 @@ class MainWindow(QMainWindow):
         self.table_widget_overview_cat.setHorizontalHeaderItem(0, QTableWidgetItem('Kategorie'))
         self.table_widget_overview_cat.setHorizontalHeaderItem(1, QTableWidgetItem('Summe'))
 
-        self.set_table_data_ausgaben_in_zahlen(self.database.get_ausgaben_in_zahlen(self.ui.combo_box_stichtag.currentText()))
+        self.set_table_data_ausgaben_in_zahlen(self.database.get_ausgaben_in_zahlen(self.current_stichtag))
 
     # Set Data for Second Table View
     def set_table_data_ausgaben_in_zahlen(self, tableData=None):
@@ -351,11 +334,14 @@ class MainWindow(QMainWindow):
     # Update Percentage Chart
     def percantage_chart_data_changed(self):
         month = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-        year = date.today().year
+        year = int(self.current_stichtag[:4])
+
+        if year == '':
+            year = date.today().year
 
         for i in range(0, 12):
             last_days = calendar.monthrange(year, int(month[i]))
-            last_days = str(last_days[1]) + '.' + str(month[i]) + '.' + str(year)
+            last_days = str(year) + '-' + str(month[i]) + '-' + str(last_days[1])
 
             table_data = self.database.get_table_widget_data(caldate=last_days)
 
@@ -366,7 +352,10 @@ class MainWindow(QMainWindow):
             for datum, einnahmen, ausgaben, kategorie in table_data:
                 if len(table_data) > 0:
                     gesamt_einnahmen = gesamt_einnahmen + round(float(einnahmen), 2)
-                    gesamt_ausgaben = gesamt_ausgaben + round(float(ausgaben), 2)
+
+                    # Exclude cat "Sparen"
+                    if kategorie != 'Sparen':
+                        gesamt_ausgaben = gesamt_ausgaben + round(float(ausgaben), 2)
                 else:
                     gesamt_einnahmen = 0.00
                     gesamt_ausgaben = 0.00
@@ -384,7 +373,7 @@ class MainWindow(QMainWindow):
     def pie_chart_data_changed(self):
         self.pie_label = "Top 5 Ausgaben"
 
-        data = self.database.get_top_5_ausgaben(date=self.ui.combo_box_stichtag.currentText())
+        data = self.database.get_top_5_ausgaben(date=self.current_stichtag)
        
         self.chart_pie.update_pie_chart(data=data, pie_label=self.pie_label)
 
@@ -403,8 +392,8 @@ class MainWindow(QMainWindow):
         file = file.getSaveFileName()
 
         if file[0] != '':
-            export_data = self.database.get_table_widget_data(self.ui.combo_box_stichtag.currentText())
-            top5_in_zahlen = self.database.get_ausgaben_in_zahlen(self.ui.combo_box_stichtag.currentText())
+            export_data = self.database.get_table_widget_data(self.current_stichtag)
+            top5_in_zahlen = self.database.get_ausgaben_in_zahlen(self.current_stichtag)
 
             converted_export_ein_ausgaben = []
             converted_export_ausgaben_in_zahlen = []

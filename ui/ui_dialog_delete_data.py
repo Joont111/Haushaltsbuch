@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:/Users/chris/Documents/GitHub/Haushaltsbuch/ui/dialogDeleteData.ui'
+# Form implementation generated from reading ui file 'C:/Users/chris/Documents/GitHub/Haushaltsbuch/ui/ui_dialog_delete_data.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -28,11 +28,11 @@ class Ui_Dialog(object):
         font.setPointSize(11)
         font.setBold(True)
         self.labelDeleteCalday.setFont(font)
-        self.labelDeleteCalday.setStyleSheet("color: #fff;")
+        self.labelDeleteCalday.setStyleSheet("color: #ffffff;")
         self.labelDeleteCalday.setObjectName("labelDeleteCalday")
         self.gridLayout.addWidget(self.labelDeleteCalday, 1, 0, 1, 1)
         self.dateEditDeleteCalday = QtWidgets.QDateEdit(self.gridLayoutWidget)
-        self.dateEditDeleteCalday.setStyleSheet("color: #fff;")
+        self.dateEditDeleteCalday.setStyleSheet("color: #ffffff;")
         self.dateEditDeleteCalday.setCalendarPopup(True)
         self.dateEditDeleteCalday.setObjectName("dateEditDeleteCalday")
         self.gridLayout.addWidget(self.dateEditDeleteCalday, 1, 1, 1, 1)
@@ -46,7 +46,7 @@ class Ui_Dialog(object):
         self.pushButtonCancel.setStyleSheet("QPushButton {\n"
 "    background-color:  #6d6d6d;\n"
 "    border-radius: 5px;\n"
-"    color: #fff;\n"
+"    color: #ffffff;\n"
 "}\n"
 "\n"
 "QPushButton::hover {\n"
@@ -64,7 +64,7 @@ class Ui_Dialog(object):
         self.pushButtonOk.setStyleSheet("QPushButton {\n"
 "    background-color:  #6d6d6d;\n"
 "    border-radius: 5px;\n"
-"    color: #fff;\n"
+"    color: #ffffff;\n"
 "}\n"
 "\n"
 "QPushButton::hover {\n"

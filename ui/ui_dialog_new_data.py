@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:/Users/chris/Documents/GitHub/Haushaltsbuch/ui/dialogNewData.ui'
+# Form implementation generated from reading ui file 'C:/Users/chris/Documents/GitHub/Haushaltsbuch/ui/ui_dialog_new_data.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -32,19 +32,19 @@ class Ui_Dialog(object):
         font.setBold(True)
         self.comboBoxKategorie.setFont(font)
         self.comboBoxKategorie.setStyleSheet("QComboBox {\n"
-"    color: #fff;\n"
+"    color: #ffffff;\n"
 "}\n"
 "\n"
 "QComboBox:items {\n"
-"    color: #fff;\n"
+"    color: #ffffff;\n"
 "}\n"
 "\n"
 "QListView {\n"
-"    color: #fff;\n"
+"    color: #ffffff;\n"
 "}   \n"
 "\n"
 "QLineEdit {\n"
-"    color: #fff;\n"
+"    color: #fffff;\n"
 "}")
         self.comboBoxKategorie.setObjectName("comboBoxKategorie")
         self.comboBoxKategorie.addItem("")
@@ -66,7 +66,7 @@ class Ui_Dialog(object):
         font.setPointSize(12)
         font.setBold(True)
         self.label.setFont(font)
-        self.label.setStyleSheet("color: #fff;")
+        self.label.setStyleSheet("color: #ffffff;")
         self.label.setObjectName("label")
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
         self.toolButtonFileDialog = QtWidgets.QToolButton(Dialog)
@@ -83,7 +83,7 @@ class Ui_Dialog(object):
         font.setPointSize(11)
         font.setBold(True)
         self.label_2.setFont(font)
-        self.label_2.setStyleSheet("color: #fff;")
+        self.label_2.setStyleSheet("color: #ffffff;")
         self.label_2.setObjectName("label_2")
         self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
         self.gridLayout_2.addLayout(self.gridLayout, 0, 0, 1, 2)
@@ -96,7 +96,7 @@ class Ui_Dialog(object):
         self.pushButtonAbbrechen.setStyleSheet("QPushButton {\n"
 "    background-color:  #6d6d6d;\n"
 "    border-radius: 5px;\n"
-"    color: #fff;\n"
+"    color: #ffffff;\n"
 "}\n"
 "\n"
 "QPushButton::hover {\n"
@@ -114,7 +114,7 @@ class Ui_Dialog(object):
         self.pushButtonSpeichern.setStyleSheet("QPushButton {\n"
 "    background-color:  #6d6d6d;\n"
 "    border-radius: 5px;\n"
-"    color: #fff;\n"
+"    color: #ffffff;\n"
 "}\n"
 "\n"
 "QPushButton::hover {\n"

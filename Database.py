@@ -47,8 +47,8 @@ class Database():
         connection = self.connect()
         cursor = connection.cursor()
 
-        month = date[3:5]
-        year = date[6:]
+        month = date[5:7]
+        year = date[:4]
 
         query = """SELECT artikelKategorie, round(sum(artikelPreis), 2) FROM artikel WHERE calmonth = '""" + month + """' AND calyear = '""" + year + """' GROUP BY artikelKategorie"""
         cursor.execute(query)
@@ -110,7 +110,7 @@ class Database():
         connection = self.connect()
         cursor = connection.cursor()
 
-        cursor.execute("""DELETE FROM tableWidgetDaten WHERE calmonth = '""" + caldate[3:5] + """' AND calyear = '""" + caldate[6:] + """'""")
+        cursor.execute("""DELETE FROM tableWidgetDaten WHERE calmonth = '""" + caldate[5:7] + """' AND calyear = '""" + caldate[:4] + """'""")
 
         connection.commit()
 
@@ -120,7 +120,7 @@ class Database():
         connection = self.connect()
         cursor = connection.cursor()
 
-        query = """SELECT calday, einnahmen, ausgaben, kategorie FROM tableWidgetDaten WHERE calmonth = '""" + caldate[3:5] + """' AND calyear = '""" + caldate[6:] + """'"""
+        query = """SELECT calday, einnahmen, ausgaben, kategorie FROM tableWidgetDaten WHERE calmonth = '""" + caldate[5:7] + """' AND calyear = '""" + caldate[:4] + """'"""
 
         cursor.execute(query)
         dataset = cursor.fetchall()
@@ -205,14 +205,27 @@ class Database():
         cursor.execute(query)
         connection.commit()
 
+        # Is Table categorie empty?
+        query = """SELECT kategorie FROM kategorie ORDER BY kategorie ASC"""
+
+        cursor.execute(query)
+        dataset = cursor.fetchall()
+
+        # If empty create initial cat's
+        if len(dataset) == 0:
+            cursor.execute("""INSERT INTO kategorie VALUES('Sparen')""")
+            connection.commit()
+            cursor.execute("""INSERT INTO kategorie VALUES('Einkauf')""")
+            connection.commit()
+
         connection.close()
 
     def get_ausgaben_in_zahlen(self, date=None):
         connection = self.connect()
         cursor = connection.cursor()
 
-        month = date[3:5]
-        year = date[6:]
+        month = date[5:7]
+        year = date[:4]
 
         query = """SELECT artikelKategorie, round(sum(artikelPreis), 2) FROM artikel WHERE calmonth = '""" + month + """' AND calyear = '""" + year + """' GROUP BY artikelKategorie"""
         cursor.execute(query)

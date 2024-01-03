@@ -149,12 +149,21 @@
         </spacer>
        </item>
        <item>
-        <widget class="QComboBox" name="combo_box_stichtag">
+        <widget class="QDateEdit" name="date_edit_stichtag">
          <property name="minimumSize">
           <size>
-           <width>200</width>
+           <width>150</width>
            <height>0</height>
           </size>
+         </property>
+         <property name="currentSection">
+          <enum>QDateTimeEdit::MonthSection</enum>
+         </property>
+         <property name="displayFormat">
+          <string>MM.yyyy</string>
+         </property>
+         <property name="calendarPopup">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
