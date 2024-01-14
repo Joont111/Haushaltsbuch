@@ -1,6 +1,7 @@
 import csv
 import sys
-from PyQt5.QtWidgets import QMainWindow, QApplication, QHBoxLayout, QVBoxLayout, QTableWidget, QHeaderView, QTableWidgetItem, QMessageBox, QFileDialog
+import re
+from PyQt5.QtWidgets import QMainWindow, QApplication, QHBoxLayout, QVBoxLayout, QTableWidget, QHeaderView, QTableWidgetItem, QMessageBox, QFileDialog, QLabel
 from PyQt5 import QtGui
 from PyQt5 import QtCore
 from Chart import Chart
@@ -52,6 +53,9 @@ class MainWindow(QMainWindow):
 
         self.ui.table_button_1.toggled.connect(self.on_table_button_1_toggled)
         self.ui.table_button_2.toggled.connect(self.on_table_button_2_toggled)
+
+        self.ui.account_balance_button_1.toggled.connect(self.on_account_balance_1_toggled)
+        self.ui.account_balance_button_2.toggled.connect(self.on_account_balance_2_toggled)
 
         self.ui.add_categorie_button.clicked.connect(self.add_new_categorie)
         self.ui.add_fixed_costs_button.clicked.connect(self.on_click_load_fixed_costs)
@@ -143,6 +147,9 @@ class MainWindow(QMainWindow):
         # Init Data and fill charts and Tables
         self.get_stichtag()
 
+        # Set Delta Account Balance
+        self.set_delta_sum_account_balance()
+
 
     # Button Functions (Change StackedWidget Pages)
     def on_home_button_1_toggled(self):
@@ -162,6 +169,12 @@ class MainWindow(QMainWindow):
     
     def on_table_button_2_toggled(self):
         self.ui.stackedWidget.setCurrentIndex(2)
+
+    def on_account_balance_1_toggled(self):
+        self.ui.stackedWidget.setCurrentIndex(3)
+
+    def on_account_balance_2_toggled(self):
+        self.ui.stackedWidget.setCurrentIndex(3)
 
     # Call Dialog show Infos
     def on_click_show_info_dialog(self):
@@ -267,6 +280,7 @@ class MainWindow(QMainWindow):
             self.bar_chart_data_changed()
 
             self.update_table_ausgaben_in_zahlen()
+            self.set_delta_sum_account_balance()
 
     # Save TableWigdet Data (Left Table) -> Obsolete?
     def save_table_data(self):
@@ -416,6 +430,17 @@ class MainWindow(QMainWindow):
             msgBox.setWindowTitle("Export")
             msgBox.setText("Daten wurden exportiert!")
             msgBox.exec()
+
+    # Set delta from Ein und Ausgaben for every month in current year
+    def set_delta_sum_account_balance(self):
+        month = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+        self.ui.label_dif_current_year.setText(self.current_stichtag[0:4])
+        account_balance_current_year = self.database.get_delta_sum(self.current_stichtag)
+
+        for calmonth, sum in account_balance_current_year:
+            for label in self.ui.page_account_balance.findChildren(QLabel, name='label_dif_' + month[int(calmonth)-1] + '_sum'):
+                label.setText(str(sum))
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
