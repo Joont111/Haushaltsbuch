@@ -42,9 +42,11 @@ Zusätzlich gibt es eine Datei für die Fixkosten. Die kannst du ausfüllen und 
 
 ![Screen Shot](https://github.com/Joont111/Haushaltsbuch/blob/main/screenshots/screenshot_listen.jpg)
 
+![Screen Shot](https://github.com/Joont111/Haushaltsbuch/blob/main/screenshots/screenshot_deltaberechnung.png)
+
 ## Getting Started
 Über den Download-Link kannst du dir den aktuellen Release herunterladen. Entpacke den Ordner und kopiere den Inhalt an einen Ort deiner Wahl. 
-[Download](https://drive.google.com/file/d/1r2iGjhyZpMitNkmK7BwXvYNJ2sQaqbll/view?usp=sharing)
+[Download]([https://drive.google.com/file/d/1r2iGjhyZpMitNkmK7BwXvYNJ2sQaqbll/view?usp=sharing](https://drive.google.com/file/d/1Koe9NUxOVbFBEtNTbzh2GLWn-M-vy1BT/view?usp=sharing))
 
 ## Built With
 
