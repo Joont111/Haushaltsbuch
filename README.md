@@ -46,7 +46,7 @@ Zusätzlich gibt es eine Datei für die Fixkosten. Die kannst du ausfüllen und 
 
 ## Getting Started
 Über den Download-Link kannst du dir den aktuellen Release herunterladen. Entpacke den Ordner und kopiere den Inhalt an einen Ort deiner Wahl. 
-[Download](https://drive.google.com/file/d/1Koe9NUxOVbFBEtNTbzh2GLWn-M-vy1BT/view?usp=sharing)
+[Download](https://drive.google.com/file/d/1id_xidhwXHOoeB-jcJqlL-4bAff0FOUL/view?usp=sharing)
 
 ## Built With
 
