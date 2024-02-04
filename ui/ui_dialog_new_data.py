@@ -70,6 +70,7 @@ class Ui_Dialog(object):
         self.label.setObjectName("label")
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
         self.toolButtonFileDialog = QtWidgets.QToolButton(Dialog)
+        self.toolButtonFileDialog.setStyleSheet("color: #ffffff")
         self.toolButtonFileDialog.setObjectName("toolButtonFileDialog")
         self.gridLayout.addWidget(self.toolButtonFileDialog, 4, 1, 1, 1)
         self.label_2 = QtWidgets.QLabel(Dialog)

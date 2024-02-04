@@ -148,7 +148,7 @@ class MainWindow(QMainWindow):
         self.get_stichtag()
 
         # Set Delta Account Balance
-        self.set_delta_sum_account_balance()
+        # self.set_delta_sum_account_balance()
 
 
     # Button Functions (Change StackedWidget Pages)
@@ -433,13 +433,62 @@ class MainWindow(QMainWindow):
 
     # Set delta from Ein und Ausgaben for every month in current year
     def set_delta_sum_account_balance(self):
+        # Set to 0 because on a change the old data will be visible on field that has no values
+        self.set_delta_sum_account_balance_to_zero()
+
         month = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
         self.ui.label_dif_current_year.setText(self.current_stichtag[0:4])
         account_balance_current_year = self.database.get_delta_sum(self.current_stichtag)
 
         for calmonth, sum in account_balance_current_year:
             for label in self.ui.page_account_balance.findChildren(QLabel, name='label_dif_' + month[int(calmonth)-1] + '_sum'):
-                label.setText(str(sum))
+                label.setText(str(sum) + ' €')
+
+        self.calc_delta_account_balance_prev_curr_month()
+
+    # set all difference label to 0
+    def set_delta_sum_account_balance_to_zero(self):
+        month = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+
+        for calmonth in month:
+            label = self.ui.page_account_balance.findChild(QLabel, name='label_dif_' + calmonth + '_sum')
+            label.setText(str('0.00 €'))        
+
+        for calmonth in month:
+            print('label_dif_' + calmonth + '_vm')
+            label = self.ui.page_account_balance.findChild(QLabel, name='label_dif_' + calmonth + '_vm')
+            label.setText(str('0.00 €'))
+
+
+    # Calc dif between month
+    def calc_delta_account_balance_prev_curr_month(self):
+        month = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+
+        self.ui.label_dif_current_year.setText(self.current_stichtag[0:4])
+        account_balance_current_year = self.database.get_delta_sum(self.current_stichtag)
+        account_balance_dec_prev_year = self.database.get_delta_single_sum((str(int(self.current_stichtag[0:4]) - 1) + '-12-31'))
+
+        if len(account_balance_dec_prev_year) == 0:
+            prev_dec = {'dez': [0.00]}
+        else:
+            prev_dec = {'dez': [account_balance_dec_prev_year[0][0]]}
+
+        for calmonth, sum in account_balance_current_year:
+            label = self.ui.page_account_balance.findChild(QLabel, name='label_dif_' + month[int(calmonth)-1] + '_vm')
+
+            if calmonth == '01':
+                if prev_dec['dez'][0] == 0.00:
+                    label.setText(str('0.00 €'))
+                else:
+                    label.setText(str(prev_dec['dez'][0]) + ' €')
+
+                prev_month_sum = sum
+            else:
+                if prev_month_sum == 0.00:
+                    label.setText('0.00 €')
+                else:
+                    label.setText(str(round(sum - prev_month_sum, 2)) + ' €' )
+                    prev_month_sum = sum
 
 
 if __name__ == '__main__':

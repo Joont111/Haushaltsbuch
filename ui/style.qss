@@ -49,17 +49,17 @@
 }
 
 #full_menu_widget QPushButton:checked {
-    color: #fff;
+    color: #ffffff;
 }
 
 #logo_label_2 {
     padding: 5px;
-    color: #fff;
+    color: #ffffff;
 }
 
 #logo_label_3 {
     padding-right: 10px;
-    color: #fff;
+    color: #ffffff;
 }
 
 #NewCategorieDialog {
@@ -73,5 +73,17 @@
 QComboBox QAbstractItemView {
     border: 1px solid gray;
     background: #4a4a4a;
-    color: #fff;  
+    color: #ffffff;  
+}
+
+QTableWidget {
+    background-color: #F0F0F0;
+}
+
+QHeaderView::section {
+    background-color: #F0F0F0;
+}
+
+QFileDialog QPushButton {
+    color: #ffffff;
 }
