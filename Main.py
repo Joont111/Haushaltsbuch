@@ -1,10 +1,11 @@
 import csv
 import sys
-import re
 from PyQt5.QtWidgets import QMainWindow, QApplication, QHBoxLayout, QVBoxLayout, QTableWidget, QHeaderView, QTableWidgetItem, QMessageBox, QFileDialog, QLabel
 from PyQt5 import QtGui
+from PyQt5.QtGui import QColor, QBrush
 from PyQt5 import QtCore
 from Chart import Chart
+import dateutil.relativedelta
 
 from ui.ui_mainwindow import Ui_MainWindow
 from NewCategorieDialog import NewCategorieDialog
@@ -13,9 +14,10 @@ from DeleteDataDialog import DeleteDataDialog
 from InfoDialog import InfoDialog
 from Database import Database
 
-from datetime import date
+from datetime import date, datetime
 import calendar
 import pandas as pd
+import numpy as np
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -71,6 +73,11 @@ class MainWindow(QMainWindow):
 
         #self.ui.combo_box_stichtag.currentTextChanged.connect(self.get_stichtag)
         self.ui.date_edit_stichtag.dateChanged.connect(self.get_stichtag)
+
+        # Create TableWidget -> account balance -> Differences Cat's
+        self.table_widget_cat_month = QTableWidget()
+        self.table_widget_cat_prev_month = QTableWidget() # TableWidget on left side; Just with cat's from previous month
+        self.table_widget_cat_curr_month = QTableWidget() # TableWidget on right side; Just with cat's from current month
 
         # **********************************************************************
         # Stacked Page: Dashboard Widgets
@@ -250,6 +257,9 @@ class MainWindow(QMainWindow):
 
         # Tab 2 Tabelle refreshen
         self.update_table_ausgaben_in_zahlen()
+
+        # Table categorie differences refresh & load
+        self.calc_dif_categorie_prev_curr_month()
 
     # Add new Data to Table Widget
     def set_table_data(self, tableData=None, noSave=True):
@@ -455,7 +465,6 @@ class MainWindow(QMainWindow):
             label.setText(str('0.00 €'))        
 
         for calmonth in month:
-            print('label_dif_' + calmonth + '_vm')
             label = self.ui.page_account_balance.findChild(QLabel, name='label_dif_' + calmonth + '_vm')
             label.setText(str('0.00 €'))
 
@@ -489,6 +498,113 @@ class MainWindow(QMainWindow):
                 else:
                     label.setText(str(round(sum - prev_month_sum, 2)) + ' €' )
                     prev_month_sum = sum
+
+    def calc_dif_categorie_prev_curr_month(self):
+        # Get current and previous month from selected stichtag
+        curr_month = datetime(int(self.current_stichtag[0:4]), int(self.current_stichtag[6:7]), 1)
+        prev_month = curr_month - dateutil.relativedelta.relativedelta(months=1)
+
+        # get list with selected categories
+        cat_curr_month = self.database.get_ausgaben_in_zahlen(date=str(curr_month.date()))
+        cat_prev_month = self.database.get_ausgaben_in_zahlen(date=str(prev_month.date()))
+
+        # Set to dataframe
+        df_curr_month = pd.DataFrame(cat_curr_month, columns=['cat', 'summe'])
+        df_prev_month = pd.DataFrame(cat_prev_month, columns=['cat', 'summe'])
+
+        df_result = df_curr_month.set_index(['cat']).subtract(df_prev_month.set_index(['cat']))
+        df_result = df_result.dropna()
+        df_result = df_result.reset_index()
+        df_result = df_result.sort_values(['summe'], ascending=True)
+
+        # Get prev month data
+        list_curr_month = df_curr_month.cat.tolist()
+        list_prev_month = df_prev_month.cat.tolist()
+        
+        # diff_cat_curr_month = set(list_curr_month).difference(set(list_prev_month)) # Categories that only appear in the current month
+        diff_cat_prev_month = set(list_prev_month).difference(set(list_curr_month))
+        df_prev_month = df_prev_month[df_prev_month.cat.isin(diff_cat_prev_month)]
+
+        # Reset Row Count for new Data (Change Key Date)
+        self.table_widget_cat_month.setRowCount(0)
+        self.table_widget_cat_prev_month.setRowCount(0)
+        self.table_widget_cat_curr_month.setRowCount(0)
+
+        # Left Table
+        # Categories that only appear in the previous month
+        self.table_widget_cat_prev_month.setColumnCount(2)   
+        self.table_widget_cat_prev_month.setHorizontalHeaderItem(0, QTableWidgetItem('Kategorie'))
+        self.table_widget_cat_prev_month.setHorizontalHeaderItem(1, QTableWidgetItem('Summe'))
+   
+        #Table will fit the screen horizontally 
+        self.table_widget_cat_prev_month.horizontalHeader().setStretchLastSection(True) 
+        self.table_widget_cat_prev_month.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch) 
+
+        self.ui.group_box_lay_cat_prev_month.addWidget(self.table_widget_cat_prev_month)
+
+        table_data_left = df_prev_month.values.tolist()
+
+        for categorie, summe in table_data_left:
+            row = self.table_widget_cat_prev_month.rowCount()
+            self.table_widget_cat_prev_month.insertRow(row)
+
+            self.table_widget_cat_prev_month.setItem(row, 0, QTableWidgetItem(categorie))
+            self.table_widget_cat_prev_month.setItem(row, 1, QTableWidgetItem(str(round(summe, 2))))
+
+        # Categories that occur in the previous month and the current month
+        #Column count 
+        self.table_widget_cat_month.setColumnCount(2)   
+        self.table_widget_cat_month.setHorizontalHeaderItem(0, QTableWidgetItem('Kategorie'))
+        self.table_widget_cat_month.setHorizontalHeaderItem(1, QTableWidgetItem('Summe'))
+   
+        #Table will fit the screen horizontally 
+        self.table_widget_cat_month.horizontalHeader().setStretchLastSection(True) 
+        self.table_widget_cat_month.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch) 
+
+        self.ui.group_box_lay_cat_month.addWidget(self.table_widget_cat_month)
+
+        table_data_mid = df_result.values.tolist()
+
+        for categorie, summe in table_data_mid:
+            row = self.table_widget_cat_month.rowCount()
+            self.table_widget_cat_month.insertRow(row)
+
+            number = round(summe, 2)
+            formatedNumber = QTableWidgetItem(str(round(summe, 2)))
+
+            if number < 0:
+                formatedNumber.setForeground(QBrush(QColor(34, 139, 34)))
+            else:
+                formatedNumber.setForeground(QBrush(QColor(205, 51, 51)))
+
+            self.table_widget_cat_month.setItem(row, 0, QTableWidgetItem(categorie))
+            self.table_widget_cat_month.setItem(row, 1, QTableWidgetItem(formatedNumber))
+
+        # Categories that occur in the current month
+            
+        diff_cat_curr_month = set(list_curr_month).difference(set(list_prev_month)) # Categories that only appear in the current month
+        df_curr_month = df_curr_month[df_curr_month.cat.isin(diff_cat_curr_month)]
+
+        #Column count     
+        self.table_widget_cat_curr_month.setColumnCount(2)   
+        self.table_widget_cat_curr_month.setHorizontalHeaderItem(0, QTableWidgetItem('Kategorie'))
+        self.table_widget_cat_curr_month.setHorizontalHeaderItem(1, QTableWidgetItem('Summe'))
+   
+        #Table will fit the screen horizontally 
+        self.table_widget_cat_curr_month.horizontalHeader().setStretchLastSection(True) 
+        self.table_widget_cat_curr_month.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch) 
+
+        self.ui.group_box_lay_cat_cur_month.addWidget(self.table_widget_cat_curr_month)
+
+        table_data_right = df_curr_month.values.tolist()  
+
+        for categorie, summe in table_data_right:
+            row = self.table_widget_cat_curr_month.rowCount()
+            self.table_widget_cat_curr_month.insertRow(row)
+
+            self.table_widget_cat_curr_month.setItem(row, 0, QTableWidgetItem(categorie))
+            self.table_widget_cat_curr_month.setItem(row, 1, QTableWidgetItem(str(round(summe, 2))))
+
 
 
 if __name__ == '__main__':

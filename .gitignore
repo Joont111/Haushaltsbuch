@@ -18,3 +18,8 @@ Testdaten/Unterwegs_13.csv
 ui_build.py
 release/release.zip
 release/Haushaltsbuch.zip
+*.csv
+*.csv
+example_data/Fixkosten.csv
+example_data/Fixkosten.csv
+example_data/Ausgaben.csv
