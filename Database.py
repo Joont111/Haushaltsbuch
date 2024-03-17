@@ -1,4 +1,6 @@
 import sqlite3
+import os.path
+from os import path
 
 import pandas as pd
 from PyQt5.QtWidgets import QMessageBox
@@ -6,7 +8,9 @@ from PyQt5.QtWidgets import QMessageBox
 
 class Database():
     def __init__(self):
-        self.create_table()
+        if path.exists('database/Haushalt.db'):
+            self.create_table()
+
 
     def connect(self):
         connect = sqlite3.connect('database/Haushalt.db')
@@ -205,6 +209,11 @@ class Database():
         cursor.execute(query)
         connection.commit()
 
+        query = """CREATE TABLE IF NOT EXISTS subscription (calday date, calmonth varchar(2), calyear int(11), sub_cat varchar(100), sub_name varchar(100), sub_period varchar(20), sub_start_date date, sub_duration varchar(20), sub_price float);"""
+
+        cursor.execute(query)
+        connection.commit()
+
         # Is Table categorie empty?
         query = """SELECT kategorie FROM kategorie ORDER BY kategorie ASC"""
 
@@ -215,6 +224,7 @@ class Database():
         if len(dataset) == 0:
             cursor.execute("""INSERT INTO kategorie VALUES('Sparen')""")
             connection.commit()
+
             cursor.execute("""INSERT INTO kategorie VALUES('Einkauf')""")
             connection.commit()
 
@@ -253,3 +263,107 @@ class Database():
         cursor.execute("""DELETE FROM tableWidgetDaten WHERE calday = '""" + calday + """'""")
 
         connection.commit()
+
+    def get_delta_sum(self, date=None):
+
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        query = """SELECT calmonth, round(sum(einnahmen), 2), round(sum(ausgaben), 2) FROM tableWidgetDaten WHERE calyear = '""" + date[0:4] + """' AND kategorie != 'Sparen' GROUP BY calmonth"""
+        cursor.execute(query)
+        dataset = cursor.fetchall()
+
+        data = []
+        for row in dataset:
+                data.append([row[0], row[1], row[2]])
+
+        df = pd.DataFrame(data, columns=['Calmonth', 'Einnahmen', 'Ausgaben'])
+        result_set = pd.DataFrame()
+        
+        sorted_df = df.sort_values('Calmonth', ascending=True)
+        for element in sorted_df:
+            result_set['calmonth'] = sorted_df['Calmonth']
+            result_set['result'] = round(sorted_df['Einnahmen'] - sorted_df['Ausgaben'], 2)
+        
+        sorted_result = result_set.sort_values('calmonth', ascending=True)
+        data = sorted_result.values.tolist()
+
+        return data       
+    
+    def get_delta_single_sum(self, date=None):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        query = """SELECT calmonth, round(sum(einnahmen), 2), round(sum(ausgaben), 2) FROM tableWidgetDaten WHERE calmonth = """ + date[5:7] + """ AND calyear = '""" + date[0:4] + """' AND kategorie != 'Sparen' GROUP BY calmonth"""
+        cursor.execute(query)
+        dataset = cursor.fetchall()
+
+        data = []
+        for row in dataset:
+                data.append([row[1] - row[2]])
+
+        return data
+    
+    def save_subscription_data(self, sub_calday, sub_cat, sub_name, sub_period, sub_start_date, sub_duration, sub_price):
+        connection = self.connect()
+        cursor = connection.cursor()
+        
+        sub_calday = sub_calday
+        sub_calmonth = sub_calday[5:7]
+        sub_calyear = sub_calday[:4]
+
+        dataset = []
+
+        dataset.append([sub_calday, sub_calmonth, sub_calyear, sub_cat, sub_name, sub_period, sub_start_date, sub_duration, sub_price])
+
+        cursor.executemany("""INSERT INTO subscription VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)""", dataset)
+
+        connection.commit()
+
+        connection.close()
+
+    def get_subscription_data(self, date=None):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        if date != None:
+            query = """SELECT sub_name, sub_period, sub_start_date, sub_duration, sub_price FROM subscription WHERE calmonth = '""" + date[5:7] + """' AND calyear = '""" + date[0:4] + """'"""
+        else:
+            query = """SELECT sub_name, sub_period, sub_start_date, sub_duration, sub_price FROM subscription"""
+
+        cursor.execute(query)
+        dataset = cursor.fetchall()
+
+        data = []
+        for row in dataset:
+                data.append([row[2], row[0], row[1], row[3], row[4]])
+
+        return data
+    
+    def delete_subscription_data(self, name=None):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        query = """DELETE FROM subscription WHERE sub_name = '""" + name + """'"""   
+
+        cursor.execute(query)
+        connection.commit()
+
+        connection.close()    
+
+    def update_subscription_data_year(self, data=None):
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        for element in data:
+            calmonth = element[0][3:5]
+            calyear = int(element[0][6:]) + 1 # set to next year
+            
+            new_date = str(calyear) + '-' + calmonth + '-' + '01' 
+            
+            query = """UPDATE subscription SET calday = '""" + new_date + """', calyear = '""" + str(calyear) + """' WHERE sub_name = '""" + element[1] + """'"""   
+
+            cursor.execute(query)
+            connection.commit()
+
+        connection.close()          

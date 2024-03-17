@@ -12,6 +12,8 @@ from NewCategorieDialog import NewCategorieDialog
 from NewDataDialog import NewDataDialog
 from DeleteDataDialog import DeleteDataDialog
 from InfoDialog import InfoDialog
+from NewSubDialog import NewSubDialog
+from DeleteSubDataDialog import DeleteSubDataDialog
 from Database import Database
 
 from datetime import date, datetime
@@ -46,6 +48,9 @@ class MainWindow(QMainWindow):
 
         self.database = Database()
 
+        # Syn function to add new subs or current subs into table data
+        self.sync_sub_data_with_table_data()
+
         # Connect Buttonns to functions
         self.ui.home_button_1.toggled.connect(self.on_home_button_1_toggled)
         self.ui.home_button_2.toggled.connect(self.on_home_button_2_toggled)
@@ -59,6 +64,9 @@ class MainWindow(QMainWindow):
         self.ui.account_balance_button_1.toggled.connect(self.on_account_balance_1_toggled)
         self.ui.account_balance_button_2.toggled.connect(self.on_account_balance_2_toggled)
 
+        self.ui.sub_button_1.toggled.connect(self.on_sub_1_toggled)
+        self.ui.sub_button_2.toggled.connect(self.on_sub_2_toggled)
+
         self.ui.add_categorie_button.clicked.connect(self.add_new_categorie)
         self.ui.add_fixed_costs_button.clicked.connect(self.on_click_load_fixed_costs)
         self.ui.add_data_button.clicked.connect(self.on_click_new_data)
@@ -67,6 +75,9 @@ class MainWindow(QMainWindow):
         
         self.ui.info_button_1.clicked.connect(self.on_click_show_info_dialog)
         self.ui.info_button_2.clicked.connect(self.on_click_show_info_dialog)
+
+        self.ui.add_sub_button.clicked.connect(self.on_click_new_sub)
+        self.ui.delete_sub_button.clicked.connect(self.on_click_delete_sub)
 
         self.ui.exit_button_1.clicked.connect(self.close)
         self.ui.exit_button_2.clicked.connect(self.close)
@@ -78,6 +89,9 @@ class MainWindow(QMainWindow):
         self.table_widget_cat_month = QTableWidget()
         self.table_widget_cat_prev_month = QTableWidget() # TableWidget on left side; Just with cat's from previous month
         self.table_widget_cat_curr_month = QTableWidget() # TableWidget on right side; Just with cat's from current month
+
+        # Create TableWidget -> Subscription data
+        self.table_widget_subscription_data = QTableWidget()
 
         # **********************************************************************
         # Stacked Page: Dashboard Widgets
@@ -156,7 +170,7 @@ class MainWindow(QMainWindow):
 
         # Set Delta Account Balance
         # self.set_delta_sum_account_balance()
-
+    
 
     # Button Functions (Change StackedWidget Pages)
     def on_home_button_1_toggled(self):
@@ -182,6 +196,14 @@ class MainWindow(QMainWindow):
 
     def on_account_balance_2_toggled(self):
         self.ui.stackedWidget.setCurrentIndex(3)
+
+    def on_sub_1_toggled(self):
+        self.ui.stackedWidget.setCurrentIndex(4)
+        self.show_all_subscription_data()
+
+    def on_sub_2_toggled(self):
+        self.ui.stackedWidget.setCurrentIndex(4)
+        self.show_all_subscription_data()
 
     # Call Dialog show Infos
     def on_click_show_info_dialog(self):
@@ -233,6 +255,13 @@ class MainWindow(QMainWindow):
         self.dialog.ui.lineEditSelectedFile.textChanged.connect(self.get_selected_file_path)
         self.dialog.ui.comboBoxKategorie.currentTextChanged.connect(self.get_selected_categorie)
 
+    def on_click_new_sub(self):
+        self.sub_dialog = NewSubDialog()
+            
+    # Delete Data
+    def on_click_delete_sub(self):
+        self.delete_sub_dialog = DeleteSubDataDialog()
+
     # **********************************************************************
     # Application Functions
     # **********************************************************************
@@ -260,6 +289,9 @@ class MainWindow(QMainWindow):
 
         # Table categorie differences refresh & load
         self.calc_dif_categorie_prev_curr_month()
+
+        # Table sub refresh & load
+        self.show_all_subscription_data()
 
     # Add new Data to Table Widget
     def set_table_data(self, tableData=None, noSave=True):
@@ -605,6 +637,74 @@ class MainWindow(QMainWindow):
             self.table_widget_cat_curr_month.setItem(row, 0, QTableWidgetItem(categorie))
             self.table_widget_cat_curr_month.setItem(row, 1, QTableWidgetItem(str(round(summe, 2))))
 
+    def show_all_subscription_data(self):
+        subscription_data = self.database.get_subscription_data()
+
+        # Reset Row Count for new Data (Change Key Date)
+        self.table_widget_subscription_data.setRowCount(0)
+
+        # Left Table
+        # Categories that only appear in the previous month
+        self.table_widget_subscription_data.setColumnCount(5)   
+        self.table_widget_subscription_data.setHorizontalHeaderItem(0, QTableWidgetItem('Beginn ab'))
+        self.table_widget_subscription_data.setHorizontalHeaderItem(1, QTableWidgetItem('Beschreibung'))
+        self.table_widget_subscription_data.setHorizontalHeaderItem(2, QTableWidgetItem('Abrechnung'))
+        self.table_widget_subscription_data.setHorizontalHeaderItem(3, QTableWidgetItem('Laufzeit'))
+        self.table_widget_subscription_data.setHorizontalHeaderItem(4, QTableWidgetItem('Preis'))
+
+        #Table will fit the screen horizontally 
+        self.table_widget_subscription_data.horizontalHeader().setStretchLastSection(True) 
+        self.table_widget_subscription_data.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch) 
+
+        self.ui.page_sub_horizontal_layout.addWidget(self.table_widget_subscription_data)
+
+        for start_date, name, period, duration, price in subscription_data:
+            row = self.table_widget_subscription_data.rowCount()
+            self.table_widget_subscription_data.insertRow(row)
+
+            self.table_widget_subscription_data.setItem(row, 0, QTableWidgetItem(start_date))
+            self.table_widget_subscription_data.setItem(row, 1, QTableWidgetItem(name))    
+            self.table_widget_subscription_data.setItem(row, 2, QTableWidgetItem(period))    
+            self.table_widget_subscription_data.setItem(row, 3, QTableWidgetItem(duration))
+            self.table_widget_subscription_data.setItem(row, 4, QTableWidgetItem(str(price)))
+
+    def sync_sub_data_with_table_data(self):
+        table_data = pd.DataFrame(self.database.get_table_widget_data(self.current_stichtag), columns=['date', 'einnahmen', 'ausgaben', 'text'])
+        sub_data = pd.DataFrame(self.database.get_subscription_data(self.current_stichtag), columns=['date', 'text', 'abrechnung', 'laufzeit', 'preis'])
+        sub_data_year = sub_data.copy()
+
+        # Get index from data there is in table data
+        new_data = sub_data[sub_data.text.isin(table_data.text)].index
+        
+        # Delete all subscriptions that already exist in the data tables 
+        sub_data.drop(new_data, inplace=True)
+
+        # Check start date of new subs
+        not_now_values = sub_data[sub_data['date'] != self.ui.date_edit_stichtag.date().toPyDate().strftime("%d.%m.%Y")].index
+        sub_data.drop(not_now_values, inplace=True)
+
+        sub_data = sub_data.reset_index(drop=True)
+
+        sub_data_list = []
+
+        sub_data_list = sub_data.values.tolist()
+
+        new_data = []
+
+        # Harmonize data for tableWidget
+        for element in sub_data_list:
+            new_data.append([element[0], '0.00 €', str(str(element[4]) + ' €'), element[1]])
+
+        # Save data into table widget
+        self.database.save_table_widget_data(tableData=new_data)
+
+        # after saving the data, we will set the 'jährlich' data to next year
+        update_values = sub_data_year[sub_data_year['abrechnung'] == 'monatlich'].index
+        sub_data_year.drop(update_values, inplace=True)
+
+        sub_data_year_list = sub_data_year.values.tolist()
+
+        self.database.update_subscription_data_year(data=sub_data_year_list)
 
 
 if __name__ == '__main__':
