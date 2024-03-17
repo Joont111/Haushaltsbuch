@@ -44,6 +44,8 @@ Zusätzlich gibt es eine Datei für die Fixkosten. Die kannst du ausfüllen und 
 
 ![Screen Shot](https://github.com/Joont111/Haushaltsbuch/blob/main/screenshots/screenshot_deltaberechnung.png)
 
+![Screen Shot](https://github.com/Joont111/Haushaltsbuch/blob/main/screenshots/screenshot_subs.png)
+
 ## Getting Started
 Über den Download-Link kannst du dir den aktuellen Release herunterladen. Entpacke den Ordner und kopiere den Inhalt an einen Ort deiner Wahl. 
 [Download](https://drive.google.com/file/d/1id_xidhwXHOoeB-jcJqlL-4bAff0FOUL/view?usp=sharing)
@@ -96,7 +98,7 @@ Eine Liste der vorgeschlagenen Funktionen (und bekannten Probleme) finden Sie in
 
 ## Authors
 
-* **Christian S.** - *SAP Consultant* - [Chris](https://github.com/Joont111) - *Idee & Umsetzung Haushaltsbuch*
+* **Christian S.** - [Chris](https://github.com/Joont111) - *Idee & Umsetzung Haushaltsbuch*
 
 ## Acknowledgements
 
