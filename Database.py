@@ -327,7 +327,7 @@ class Database():
         cursor = connection.cursor()
 
         if date != None:
-            query = """SELECT sub_name, sub_period, sub_start_date, sub_duration, sub_price FROM subscription WHERE calmonth = '""" + date[5:7] + """' AND calyear = '""" + date[0:4] + """'"""
+            query = """SELECT sub_name, sub_period, sub_start_date, sub_duration, sub_price FROM subscription WHERE calmonth <= '""" + date[5:7] + """' AND calyear <= '""" + date[0:4] + """'"""
         else:
             query = """SELECT sub_name, sub_period, sub_start_date, sub_duration, sub_price FROM subscription"""
 

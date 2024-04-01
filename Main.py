@@ -672,6 +672,7 @@ class MainWindow(QMainWindow):
         table_data = pd.DataFrame(self.database.get_table_widget_data(self.current_stichtag), columns=['date', 'einnahmen', 'ausgaben', 'text'])
         sub_data = pd.DataFrame(self.database.get_subscription_data(self.current_stichtag), columns=['date', 'text', 'abrechnung', 'laufzeit', 'preis'])
         sub_data_year = sub_data.copy()
+        current_date = self.ui.date_edit_stichtag.date().toPyDate().strftime("%d.%m.%Y")
 
         # Get index from data there is in table data
         new_data = sub_data[sub_data.text.isin(table_data.text)].index
@@ -680,7 +681,7 @@ class MainWindow(QMainWindow):
         sub_data.drop(new_data, inplace=True)
 
         # Check start date of new subs
-        not_now_values = sub_data[sub_data['date'] != self.ui.date_edit_stichtag.date().toPyDate().strftime("%d.%m.%Y")].index
+        not_now_values = sub_data[sub_data['date'] > current_date].index
         sub_data.drop(not_now_values, inplace=True)
 
         sub_data = sub_data.reset_index(drop=True)
@@ -693,7 +694,7 @@ class MainWindow(QMainWindow):
 
         # Harmonize data for tableWidget
         for element in sub_data_list:
-            new_data.append([element[0], '0.00 €', str(str(element[4]) + ' €'), element[1]])
+            new_data.append([current_date, '0.00 €', str(str(element[4]) + ' €'), element[1]])
 
         # Save data into table widget
         self.database.save_table_widget_data(tableData=new_data)

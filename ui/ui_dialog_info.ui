@@ -28,7 +28,7 @@ color: #fff;</string>
    <item row="1" column="1">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>04022024</string>
+      <string>01042024</string>
      </property>
     </widget>
    </item>
